@@ -1,22 +1,21 @@
 # ParallelGen
 
 [![CI](https://github.com/kapildhinwa2010-dev/ParallelGen/actions/workflows/ci.yml/badge.svg)](https://github.com/kapildhinwa2010-dev/ParallelGen/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/kapildhinwa2010-dev/ParallelGen/actions/workflows/codeql.yml/badge.svg)](https://github.com/kapildhinwa2010-dev/ParallelGen/actions/workflows/codeql.yml)
-![Python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+[![CI](https://github.com/kapildhinwa2010-dev/ParallelGen/actions/workflows/codeql.yml/badge.svg)](https://github.com/kapildhinwa2010-dev/ParallelGen/actions/workflows/codeql.yml)
 
-Matrix generation engines: infinite, chunked, memory-safe, parallel and
-streamed generation from one seeded recipe. DNA_DYNIMO lineage of the
-[Kapildhinwa2010-dev Toolkit](https://github.com/kapildhinwa2010-dev/Kapildhinwa2010-dev).
+Parallel matrix generation across worker threads, with an honest sequential-vs-threaded timing report.
 
-## Features
+**Part of the [Kapildhinwa2010-dev Toolkit](https://github.com/kapildhinwa2010-dev/Kapildhinwa2010-dev).**
 
-- Seeded low-rank `GenRecipe` - deterministic matrices
-- `generate_infinite` - endless independent matrices
-- `generate_chunked` - constant per-chunk memory
-- `generate_safe` - byte-budget guard with `MemoryBudget`
-- `generate_parallel` - thread-pool block generation
-- `generate_stream` / `load_stream` - raw disk streaming round-trip
+## What it does
+
+ParallelGen owns the PARALLEL mode of the DNA_DYNIMO generator
+family: generate_parallel() produces independent recipe matrices
+across worker threads (block i uses seed_offset i, so results are
+independent of worker count); parallel_report() times sequential vs
+threaded. The HONEST LIMITATION (also in the docstring): Python
+threads + the GIL mean speedups come only from NumPy releasing the
+GIL inside BLAS; for small matrices threading can be SLOWER.
 
 ## Install
 
@@ -24,23 +23,31 @@ streamed generation from one seeded recipe. DNA_DYNIMO lineage of the
 pip install -r requirements.txt
 ```
 
-## Quickstart
+## Quick start
 
 ```python
-from parallelgen import GenRecipe, generate, generate_chunked
+from parallelgen import GenRecipe, generate_parallel, parallel_report
 
-recipe = GenRecipe(rows=64, cols=128, rank=8, seed=0)
-W = generate(recipe)
-for chunk in generate_chunked(recipe, chunk_rows=16):
-    print(chunk.shape)
+recipe = GenRecipe(rows=1024, cols=1024, rank=8, seed=0)
+blocks = generate_parallel(recipe, blocks=4, workers=2)
+print(parallel_report(recipe, blocks=4, workers=2)["speedup"])
 ```
 
-## Tests
+## API
 
-```bash
-pytest tests/ -v
-```
+- GenRecipe(rows, cols, rank, seed)
+- generate(recipe) - the canonical matrix
+- generate_parallel(recipe, blocks, workers)
+- parallel_report(recipe, blocks, workers) - {sequential_seconds,
+  parallel_seconds, speedup, blocks, workers}
+
+## Honest results and limitations
+
+- speedup < 1 is a common outcome for small matrices (GIL + thread
+  overhead): measure with parallel_report() before assuming a win.
+- Threads, not processes: no multi-core gain outside GIL-releasing
+  BLAS calls.
 
 ## License
 
-MIT
+MIT - see [LICENSE](LICENSE).
