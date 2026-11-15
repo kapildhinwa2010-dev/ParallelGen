@@ -1,7 +1,8 @@
 # ParallelGen
 
 [![CI](https://github.com/kapildhinwa2010-dev/ParallelGen/actions/workflows/ci.yml/badge.svg)](https://github.com/kapildhinwa2010-dev/ParallelGen/actions/workflows/ci.yml)
-[![CI](https://github.com/kapildhinwa2010-dev/ParallelGen/actions/workflows/codeql.yml/badge.svg)](https://github.com/kapildhinwa2010-dev/ParallelGen/actions/workflows/codeql.yml)
+[![CodeQL](https://github.com/kapildhinwa2010-dev/ParallelGen/actions/workflows/codeql.yml/badge.svg)](https://github.com/kapildhinwa2010-dev/ParallelGen/actions/workflows/codeql.yml)
+
 
 Parallel matrix generation across worker threads, with an honest sequential-vs-threaded timing report.
 
